@@ -1,0 +1,46 @@
+# Remove Odd or Even Pages of a Range
+
+Add a `RangeMode` to narrow the range to its odd or even pages. The following example removes the even pages from 1 to 6: pages 2, 4, and 6.
+
+## Code Example
+
+```fsharp
+open System
+open GroupDocs.Merger.Domain.Options
+open GroupDocs.Merger.LowCode
+
+[<EntryPoint>]
+let main _ =
+    // Load license keys
+    let publicKey = Environment.GetEnvironmentVariable("GD_PUBLIC_KEY")
+    let privateKey = Environment.GetEnvironmentVariable("GD_PRIVATE_KEY")
+
+    // Apply the license
+    License.Set(publicKey, privateKey)
+
+    // Remove the even pages from 1 to 6
+    let remover = RemovePagesPdf("business-plan.pdf", RemoveOptions(1, 6, RangeMode.EvenPages))
+
+    // Save the remaining pages
+    remover.Save("output/without-even-pages.pdf")
+    0
+```
+
+## How to Run
+
+1. Install the .NET SDK for `net10.0`.
+2. Set the `GD_PUBLIC_KEY` and `GD_PRIVATE_KEY` environment variables to your license keys.
+3. Open this directory and run the example:
+   ```bash
+   dotnet run
+   ```
+
+## Input Files
+
+- `business-plan.pdf`
+
+## Learn More
+
+- [Using RemovePagesPdf to Remove Pages from PDF Documents](https://docs.groupdocs.net/merger/developer-guide/using-remove-pages-pdf/) in the GroupDocs.Merger.LowCode documentation
+- [GroupDocs.Merger.LowCode](https://www.nuget.org/packages/GroupDocs.Merger.LowCode) on NuGet
+- [Get a temporary license](https://purchase.groupdocs.net/temporary-license/)

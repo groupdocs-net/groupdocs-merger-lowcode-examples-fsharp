@@ -1,0 +1,51 @@
+name: Build Examples (Windows)
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-windows:
+    name: Build Code Examples
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore GroupDocs.Merger.LowCode.Examples.sln
+        
+    - name: Build individual projects
+      run: |
+        echo "=== Building Individual Projects ==="
+        Get-ChildItem -Path "Examples" -Recurse -Filter "*.fsproj" | Sort-Object FullName | ForEach-Object {
+          $project = $_.FullName
+          echo "Building: $project"
+          dotnet build "$project" --configuration Release --no-restore
+          if ($LASTEXITCODE -eq 0) {
+            echo "✓ Successfully built: $project"
+            # Clean up bin and obj folders to save space
+            $projectDir = Split-Path -Parent $project
+            if (Test-Path "$projectDir\bin") { Remove-Item "$projectDir\bin" -Recurse -Force }
+            if (Test-Path "$projectDir\obj") { Remove-Item "$projectDir\obj" -Recurse -Force }
+            echo "✓ Cleaned up: $projectDir"
+          } else {
+            echo "✗ Failed to build: $project"
+            exit 1
+          }
+        }
+        
+    - name: List all projects
+      run: |
+        echo "=== All Projects in Solution ==="
+        Get-ChildItem -Path "Examples" -Recurse -Filter "*.fsproj" | ForEach-Object { $_.FullName } | Sort-Object
+        echo "=== Total Projects ==="
+        (Get-ChildItem -Path "Examples" -Recurse -Filter "*.fsproj").Count 

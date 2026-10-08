@@ -1,0 +1,49 @@
+name: Build Examples (Linux)
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    name: Build Code Examples
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore GroupDocs.Merger.LowCode.Examples.sln
+        
+    - name: Build individual projects
+      run: |
+        echo "=== Building Individual Projects ==="
+        find Examples -name "*.fsproj" -type f | sort | while read project; do
+          echo "Building: $project"
+          dotnet build "$project" --configuration Release --no-restore
+          if [ $? -eq 0 ]; then
+            echo "✓ Successfully built: $project"
+            # Clean up bin and obj folders to save space
+            project_dir=$(dirname "$project")
+            rm -rf "$project_dir/bin" "$project_dir/obj"
+            echo "✓ Cleaned up: $project_dir"
+          else
+            echo "✗ Failed to build: $project"
+            exit 1
+          fi
+        done
+        
+    - name: List all projects
+      run: |
+        echo "=== All Projects in Solution ==="
+        find Examples -name "*.fsproj" -type f | sort
+        echo "=== Total Projects ==="
+        find Examples -name "*.fsproj" -type f | wc -l 
